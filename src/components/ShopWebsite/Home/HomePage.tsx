@@ -1,17 +1,16 @@
-"use client";
-import React, { useEffect, useState } from "react";
-import Card from "@/components/UI/Cards/Card";
-import { getData } from "@/lib/request/resource/ShopRequest";
-import { ICards } from "@/lib/request/resource/Cards/lib/ICardTypes";
+"use client"
+import React, { useState, useEffect } from 'react';
+import Card from '@/components/UI/Cards/Card';
+import { getData } from '@/lib/request/resource/ShopRequest';
+import { ICards } from '@/lib/request/resource/Cards/lib/ICardTypes';
 
 const HomePage = () => {
   const [cards, setCards] = useState<ICards[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-
-    const [minPrice, setMinPrice] = useState<number | null>(null)
-    const [maxPrice, setMaxPrice] = useState<number | null>(null)
+  const [minPrice, setMinPrice] = useState<number | null>(null);
+  const [maxPrice, setMaxPrice] = useState<number | null>(null);
+  const [filterCard, setFilterCard] = useState<ICards[]>([]);
 
   useEffect(() => {
     const fetchCards = async () => {
@@ -20,7 +19,7 @@ const HomePage = () => {
         if (Array.isArray(data)) {
           setCards(data);
         } else {
-          setError("Invalid data format");
+          setError('Invalid data format');
         }
       } catch (error: any) {
         setError(error.message);
@@ -32,18 +31,20 @@ const HomePage = () => {
     fetchCards();
   }, []);
 
-  const minPriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setMinPrice(e.target.value ? parseFloat(e.target.value): null)
-  }
+  const handleMinPriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setMinPrice(Number(e.target.value));
+  };
 
-  const maxPriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setMaxPrice(e.target.value ? parseFloat(e.target.value): null)
-  }
+  const handleMaxPriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setMaxPrice(Number(e.target.value));
+  };
 
-  const filterCard = cards.filter((card) => {
-    const isMinPrice = minPrice === null || card.price >= minPrice
-    const isMaxPrice = maxPrice === null || card.price >= maxPrice
-  })
+  const handleSearch = () => {
+    const filtered = cards.filter(
+      (card) => card.price >= (minPrice || 0) && card.price <= (maxPrice || Infinity)
+    );
+    setFilterCard(filtered); // Update the filterCard state with filtered results
+  };
 
   if (loading) {
     return <p>Loading...</p>;
@@ -60,15 +61,17 @@ const HomePage = () => {
           type="number"
           placeholder="ОТ"
           className="border border-solid border-teal-500 p-4"
-          value={minPrice !== null ? minPrice : '10'}
+          value={minPrice !== null ? minPrice : ''}
+          onChange={handleMinPriceChange}
         />
         <input
           type="number"
           placeholder="ДО"
           className="border border-solid border-teal-500 p-4"
-          value={maxPrice !== null ? maxPrice : '20'}
+          value={maxPrice !== null ? maxPrice : ''}
+          onChange={handleMaxPriceChange}
         />
-        <button className="border border-solid border-teal-500 p-4" onClick={() => setCards(filterCard)}>
+        <button className="border border-solid border-teal-500 p-4" onClick={handleSearch}>
           Найти
         </button>
       </div>
